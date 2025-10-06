@@ -1,18 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teletext SET!</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Teletekst 999</title>
+  <link rel="stylesheet" href="base_page.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
-  <div class="teletext">
-    <h1>SET! - Teletext Edition</h1>
-    <div id="board"></div>
-    <p id="message"></p>
-    <p><a href="index.html">← Back to homepage</a></p>
+  <div class="tt-page">
+    <header class="tt-header">
+      <span class="tt-brand"><a href="index.html">Teletekst</a></span>
+      <span class="tt-pagenr">999</span>
+    </header>
+
+    <div class="tt-bar yellow"></div>
+    <div class="tt-title blue">Play one round of SET!</div>
+
+    <main class="tt-content">
+      <p>Pick 3 cards that form a <a href="https://en.wikipedia.org/wiki/Set_(card_game)">set</a>!</p>
+      <div id="board"></div>
+      <p id="message"></p>
+    </main>
+
+    <footer class="tt-footer">
+      <div class="tt-bar yellow"></div>
+      <nav>
+        <a href="https://github.com/dgoldsb" class="red">GitHub</a>
+        <a href="assets/cv.pdf" class="green">CV</a>
+        <a href="https://www.linkedin.com/in/dylan-goldsborough-152992aa/" class="yellow">LinkedIn</a>
+        <a href="https://grugbrain.dev/" class="cyan">Grug</a>
+      </nav>
+    </footer>
   </div>
-  <script src="script.js"></script>
 </body>
 </html>

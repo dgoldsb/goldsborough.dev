@@ -1,0 +1,71 @@
+@font-face {
+  font-family: 'Teletext';
+  src: url('fonts/TeleTekst.ttf') format('truetype');
+}
+
+body {
+  background: black;
+  color: cyan;
+  font-family: 'Teletext', monospace;
+  font-size: 18px;
+  line-height: 1.1;
+  margin: 0;
+  padding: 0;
+}
+
+.tt-page {
+  max-width: 40ch;
+  margin: 0 auto;
+  padding: 0.5em;
+}
+
+.tt-header {
+  color: #00ff00;
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+}
+
+.tt-bar.yellow {
+  background: yellow;
+  height: 0.25em;
+  margin: 0.2em 0;
+}
+
+.tt-title.blue {
+  background: #0000ff;
+  color: yellow;
+  padding: 0.1em 0.3em;
+  font-weight: bold;
+}
+
+.tt-content {
+  color: cyan;
+  margin-top: 0.5em;
+}
+
+.tt-content p {
+  margin: 0.3em 0;
+}
+
+.tt-footer {
+  text-align: center;
+  color: white;
+  margin-top: 1em;
+}
+
+.tt-footer nav {
+  display: flex;
+  justify-content: space-around;
+  font-weight: bold;
+  margin-top: 0.3em;
+}
+
+.tt-link.red    { color: red; }
+.tt-link.green  { color: #00ff00; }
+.tt-link.yellow { color: yellow; }
+.tt-link.cyan   { color: cyan; }
+
+.tt-link:hover {
+  text-decoration: underline;
+}
