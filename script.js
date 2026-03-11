@@ -5,9 +5,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const GRID_SIZE = 30;
   const DISPLAY_SIZE_DESKTOP = 240; // CSS pixels, matches .grass-tile
 
+  const BASE_GROW_INTERVAL_MS = 5_000;
+  const BASE_LIFETIME_MS = 60_000;
+  const TIMING_NOISE_FACTOR = 0.1; // 10% timing noise, tweakable
+
   const tiles = [];
   let growTimerId = null;
   let hueOffset = 0;
+
+  function withTimingNoise(baseMs) {
+    const range = baseMs * TIMING_NOISE_FACTOR;
+    return baseMs + (Math.random() * 2 - 1) * range;
+  }
 
   function currentDisplaySize() {
     // Keep JS positioning in sync with responsive CSS sizes
@@ -49,23 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function fieldIsFull() {
-    const wrapper = document.querySelector(".grass-wrapper");
-    if (!wrapper) return false;
-
-    const displaySize = currentDisplaySize();
-    if (!displaySize) return false;
-
-    const rect = wrapper.getBoundingClientRect();
-    const cols = Math.floor(rect.width / displaySize);
-    const rows = Math.floor(rect.height / displaySize);
-
-    if (cols < 1 || rows < 1) return false;
-
-    const capacity = cols * rows;
-    return tiles.length >= capacity;
-  }
-
   function createGrassTile(x, y) {
     const canvas = document.createElement("canvas");
     canvas.width = GRID_SIZE;
@@ -85,6 +77,17 @@ document.addEventListener("DOMContentLoaded", () => {
     tiles.push(tile);
     field.appendChild(canvas);
 
+    const lifetime = withTimingNoise(BASE_LIFETIME_MS);
+    setTimeout(() => {
+      const idx = tiles.indexOf(tile);
+      if (idx !== -1) {
+        tiles.splice(idx, 1);
+      }
+      if (canvas.parentElement === field) {
+        field.removeChild(canvas);
+      }
+    }, lifetime);
+
     canvas.addEventListener("click", () => {
       hueOffset = (hueOffset + 25 + Math.random() * 10) % 360;
       drawGrass(canvas, randomGrassBase());
@@ -92,17 +95,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function spawnAdjacentGrass() {
-    if (fieldIsFull()) {
-      if (growTimerId !== null) {
-        clearInterval(growTimerId);
-        growTimerId = null;
-      }
-      return;
-    }
-
     if (!tiles.length) {
       createGrassTile(0, 0);
-      return;
+      return true;
     }
 
     const directions = [
@@ -123,14 +118,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!occupied.has(key)) {
         createGrassTile(nx, ny);
-        return;
+        return true;
       }
     }
+
+    return false;
+  }
+
+  function scheduleNextGrowth() {
+    const delay = withTimingNoise(BASE_GROW_INTERVAL_MS);
+    growTimerId = setTimeout(() => {
+      const grew = spawnAdjacentGrass();
+      if (grew) {
+        scheduleNextGrowth();
+      } else {
+        growTimerId = null;
+      }
+    }, delay);
   }
 
   // Start with a single piece of grass.
   createGrassTile(0, 0);
 
-  // Grow a new piece every 10 seconds until the field is full.
-  growTimerId = setInterval(spawnAdjacentGrass, 10_000);
+  // Grow new pieces roughly every 5 seconds until the field is full.
+  scheduleNextGrowth();
 });
