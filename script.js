@@ -89,8 +89,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }, lifetime);
 
     canvas.addEventListener("click", () => {
-      hueOffset = (hueOffset + 25 + Math.random() * 10) % 360;
-      drawGrass(canvas, randomGrassBase());
+      const idx = tiles.indexOf(tile);
+      if (idx !== -1) {
+        tiles.splice(idx, 1);
+      }
+      if (canvas.parentElement === field) {
+        field.removeChild(canvas);
+      }
     });
   }
 
@@ -117,6 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const key = `${nx},${ny}`;
 
       if (!occupied.has(key)) {
+        hueOffset = (hueOffset + 25 + Math.random() * 10) % 360;
         createGrassTile(nx, ny);
         return true;
       }
