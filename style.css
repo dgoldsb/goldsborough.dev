@@ -66,6 +66,8 @@ body {
 
 #grass-field {
   position: relative;
+  width: 240px;
+  height: 240px;
 }
 
 .grass-tile {

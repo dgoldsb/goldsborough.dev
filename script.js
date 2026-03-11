@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const DISPLAY_SIZE_DESKTOP = 240; // CSS pixels, matches .grass-tile
 
   const tiles = [];
+  let growTimerId = null;
   let hueOffset = 0;
 
   function currentDisplaySize() {
@@ -48,33 +49,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function layoutTiles() {
-    if (!tiles.length) return;
-    let minX = tiles[0].x;
-    let minY = tiles[0].y;
-    let maxX = tiles[0].x;
-    let maxY = tiles[0].y;
-
-    for (const t of tiles) {
-      if (t.x < minX) minX = t.x;
-      if (t.y < minY) minY = t.y;
-      if (t.x > maxX) maxX = t.x;
-      if (t.y > maxY) maxY = t.y;
-    }
+  function fieldIsFull() {
+    const wrapper = document.querySelector(".grass-wrapper");
+    if (!wrapper) return false;
 
     const displaySize = currentDisplaySize();
+    if (!displaySize) return false;
 
-    const widthTiles = maxX - minX + 1;
-    const heightTiles = maxY - minY + 1;
-    field.style.width = `${widthTiles * displaySize}px`;
-    field.style.height = `${heightTiles * displaySize}px`;
+    const rect = wrapper.getBoundingClientRect();
+    const cols = Math.floor(rect.width / displaySize);
+    const rows = Math.floor(rect.height / displaySize);
 
-    for (const t of tiles) {
-      const left = (t.x - minX) * displaySize;
-      const top = (t.y - minY) * displaySize;
-      t.el.style.left = `${left}px`;
-      t.el.style.top = `${top}px`;
-    }
+    if (cols < 1 || rows < 1) return false;
+
+    const capacity = cols * rows;
+    return tiles.length >= capacity;
   }
 
   function createGrassTile(x, y) {
@@ -86,6 +75,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const base = randomGrassBase();
     drawGrass(canvas, base);
 
+    const displaySize = currentDisplaySize();
+    const left = x * displaySize;
+    const top = y * displaySize;
+    canvas.style.left = `${left}px`;
+    canvas.style.top = `${top}px`;
+
     const tile = { x, y, el: canvas };
     tiles.push(tile);
     field.appendChild(canvas);
@@ -94,11 +89,17 @@ document.addEventListener("DOMContentLoaded", () => {
       hueOffset = (hueOffset + 25 + Math.random() * 10) % 360;
       drawGrass(canvas, randomGrassBase());
     });
-
-    layoutTiles();
   }
 
   function spawnAdjacentGrass() {
+    if (fieldIsFull()) {
+      if (growTimerId !== null) {
+        clearInterval(growTimerId);
+        growTimerId = null;
+      }
+      return;
+    }
+
     if (!tiles.length) {
       createGrassTile(0, 0);
       return;
@@ -129,4 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Start with a single piece of grass.
   createGrassTile(0, 0);
+
+  // Grow a new piece every 10 seconds until the field is full.
+  growTimerId = setInterval(spawnAdjacentGrass, 10_000);
 });
