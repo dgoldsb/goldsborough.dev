@@ -1,76 +1,132 @@
-const shapes = {
-  O: "◉",
-  S: "▧",
-  W: "/\/\",
-};
+document.addEventListener("DOMContentLoaded", () => {
+  const field = document.getElementById("grass-field");
+  if (!field) return;
 
-const cards = [
-  { shape: "O", color: "R", number: 1 },
-  { shape: "O", color: "R", number: 2 },
-  { shape: "O", color: "R", number: 3 },
-  { shape: "S", color: "G", number: 1 },
-  { shape: "S", color: "G", number: 2 },
-  { shape: "S", color: "G", number: 3 },
-  { shape: "W", color: "B", number: 1 },
-  { shape: "W", color: "B", number: 2 },
-  { shape: "W", color: "B", number: 3 },
-  { shape: "O", color: "G", number: 2 },
-  { shape: "S", color: "R", number: 3 },
-  { shape: "W", color: "R", number: 1 },
-];
+  const GRID_SIZE = 30;
+  const DISPLAY_SIZE_DESKTOP = 240; // CSS pixels, matches .grass-tile
 
-const colorMap = {
-  R: "#ff0000",
-  G: "#00ff00",
-  B: "#00aaff",
-};
+  const tiles = [];
+  let hueOffset = 0;
 
-const board = document.getElementById("board");
-const message = document.getElementById("message");
-let selected = [];
-
-function asciiCard(card) {
-  const shape = shapes[card.shape];
-  const coloredShape = `<span class="shape" style="color:${colorMap[card.color]}">${shape}</span>`;
-  const line = " " + Array(card.number).fill(coloredShape).join(" ") + " ";
-  const pad = " ".repeat(Math.max(0, 7 - line.length / 2));
-  return `+---------+
-|${line}${pad}|
-|         |
-|         |
-+---------+
-(${card.color})`;
-}
-
-function drawCard(card, index) {
-  const el = document.createElement("pre");
-  el.className = "card";
-  el.innerHTML = asciiCard(card);
-  el.onclick = () => selectCard(index, el);
-  board.appendChild(el);
-}
-
-function selectCard(index, el) {
-  if (selected.includes(index)) {
-    selected = selected.filter((i) => i !== index);
-    el.classList.remove("selected");
-  } else {
-    selected.push(index);
-    el.classList.add("selected");
+  function currentDisplaySize() {
+    // Keep JS positioning in sync with responsive CSS sizes
+    const sample = field.querySelector(".grass-tile");
+    if (sample) {
+      const rect = sample.getBoundingClientRect();
+      return rect.width || DISPLAY_SIZE_DESKTOP;
+    }
+    return DISPLAY_SIZE_DESKTOP;
   }
-  if (selected.length === 3) checkSet();
-}
 
-function checkSet() {
-  const [a, b, c] = selected.map((i) => cards[i]);
-  const props = ["shape", "color", "number"];
-  const isSet = props.every((p) => {
-    const vals = [a[p], b[p], c[p]];
-    return new Set(vals).size !== 2;
-  });
-  message.innerText = isSet ? "✅ That’s a Set!" : "❌ Not a Set.";
-  selected = [];
-  document.querySelectorAll(".card").forEach((c) => c.classList.remove("selected"));
-}
+  function randomGrassBase() {
+    const baseHue = (120 + hueOffset) % 360;
+    const hue = baseHue + (Math.random() - 0.5) * 40;
+    const saturation = 55 + Math.random() * 15;
+    const lightnessBase = 22 + Math.random() * 12;
+    return { hue, saturation, lightnessBase };
+  }
 
-cards.forEach(drawCard);
+  function drawGrass(canvas, base) {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const { hue, saturation, lightnessBase } = base;
+    const w = canvas.width;
+    const h = canvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const verticalFactor = y / h;
+        const noise = (Math.random() - 0.5) * 10;
+        let lightness = lightnessBase + verticalFactor * 22 + noise;
+        lightness = Math.max(12, Math.min(70, lightness));
+        ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+  }
+
+  function layoutTiles() {
+    if (!tiles.length) return;
+    let minX = tiles[0].x;
+    let minY = tiles[0].y;
+    let maxX = tiles[0].x;
+    let maxY = tiles[0].y;
+
+    for (const t of tiles) {
+      if (t.x < minX) minX = t.x;
+      if (t.y < minY) minY = t.y;
+      if (t.x > maxX) maxX = t.x;
+      if (t.y > maxY) maxY = t.y;
+    }
+
+    const displaySize = currentDisplaySize();
+
+    const widthTiles = maxX - minX + 1;
+    const heightTiles = maxY - minY + 1;
+    field.style.width = `${widthTiles * displaySize}px`;
+    field.style.height = `${heightTiles * displaySize}px`;
+
+    for (const t of tiles) {
+      const left = (t.x - minX) * displaySize;
+      const top = (t.y - minY) * displaySize;
+      t.el.style.left = `${left}px`;
+      t.el.style.top = `${top}px`;
+    }
+  }
+
+  function createGrassTile(x, y) {
+    const canvas = document.createElement("canvas");
+    canvas.width = GRID_SIZE;
+    canvas.height = GRID_SIZE;
+    canvas.className = "grass-tile";
+
+    const base = randomGrassBase();
+    drawGrass(canvas, base);
+
+    const tile = { x, y, el: canvas };
+    tiles.push(tile);
+    field.appendChild(canvas);
+
+    canvas.addEventListener("click", () => {
+      hueOffset = (hueOffset + 25 + Math.random() * 10) % 360;
+      drawGrass(canvas, randomGrassBase());
+    });
+
+    layoutTiles();
+  }
+
+  function spawnAdjacentGrass() {
+    if (!tiles.length) {
+      createGrassTile(0, 0);
+      return;
+    }
+
+    const directions = [
+      { x: 1, y: 0 },
+      { x: -1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 0, y: -1 },
+    ];
+
+    const occupied = new Set(tiles.map((t) => `${t.x},${t.y}`));
+
+    for (let attempt = 0; attempt < 50; attempt++) {
+      const base = tiles[Math.floor(Math.random() * tiles.length)];
+      const dir = directions[Math.floor(Math.random() * directions.length)];
+      const nx = base.x + dir.x;
+      const ny = base.y + dir.y;
+      const key = `${nx},${ny}`;
+
+      if (!occupied.has(key)) {
+        createGrassTile(nx, ny);
+        return;
+      }
+    }
+  }
+
+  // Start with a single piece of grass.
+  createGrassTile(0, 0);
+});

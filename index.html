@@ -1,46 +1,28 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Teletekst 100</title>
-  <link rel="stylesheet" href="base_home.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dylan Goldsborough</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
-  <div class="tt-home">
-    <header>
-      <span>Teletekst</span>
-      <span>100</span>
+  <div class="page">
+    <header class="hero">
+      <h1 class="name">Dylan Goldsborough</h1>
+      <nav class="links">
+        <a href="https://github.com/dgoldsb" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://www.linkedin.com/in/dylan-goldsborough-152992aa/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="assets/cv.pdf" target="_blank" rel="noopener noreferrer">CV</a>
+      </nav>
     </header>
 
-    <div class="yellowbar"></div>
-
-    <div class="teletext-logo">
-      <pre>
-      <span class="blue">████████████████████████████████████████████</span>
-      <span class="blue">█</span><span class="white">▀▀▀▀▀█▀▀▀█▀▀▀▀▀█▀▀▀▀█▀▀▀▀█▀▀▀▀█▀▀▀▀▀█</span><span class="blue">█</span>
-      <span class="blue">█</span><span class="white"> ███ █ █ █ ███ █ ███ █ ███ █ ███ ████</span><span class="blue">█</span>
-      <span class="blue">█</span><span class="white">▀▀▀▀▀█▀▀▀█▀▀▀▀▀█▀▀▀▀█▀▀▀▀█▀▀▀▀█▀▀▀▀▀█</span><span class="blue">█</span>
-      <span class="blue">████████████████████████████████████████████</span>
-      </pre>
-    </div>
-
-    <div class="news-list">
-      <p>Advent of Code 2024...............  <span class="yellow"><a href="https://github.com/dgoldsb/advent-of-code-2024" class="white">112</a></span></p>
-      <p>AMQP to SSE adapter............... <span class="yellow"><a href="https://github.com/dgoldsb/amqp-sse-adapter" class="white">126</a></span></p>
-      <p>APA LaTeX template................ <span class="yellow"><a href="https://github.com/dgoldsb/tex-apa" class="white">131</a></span></p>
-      <p>SET!.............................. <span class="yellow"><a href="set.html" class="white">999</a></span></p>
-    </div>
-
-    <footer>
-      <div class="yellowbar"></div>
-      <p>Dylan Goldsborough 2025</p>
-      <nav>
-        <a href="https://github.com/dgoldsb" class="red">GitHub</a>
-        <a href="assets/cv.pdf" class="green">CV</a>
-        <a href="https://www.linkedin.com/in/dylan-goldsborough-152992aa/" class="yellow">LinkedIn</a>
-        <a href="https://grugbrain.dev/" class="cyan">Grug</a>
-      </nav>
-    </footer>
+    <main class="main">
+      <div class="grass-wrapper">
+        <div id="grass-field" aria-label="Growing pixel grass"></div>
+      </div>
+    </main>
   </div>
 </body>
 </html>

@@ -1,30 +1,91 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
-  background: black;
-  color: #00ff00;
-  font-family: 'Courier New', monospace;
   margin: 0;
-  padding: 20px;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  color: #111111;
+  background: #e5e5e5;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem 3rem;
+  gap: 3rem;
+}
+
+.hero {
   text-align: center;
 }
-h1 {
-  color: #ffff00;
-  border-bottom: 2px solid #ff0000;
-  padding-bottom: 5px;
+
+.name {
+  margin: 0 0 1rem;
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  letter-spacing: 0.06em;
 }
-a {
-  color: #00ffff;
+
+.links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.links a {
+  color: inherit;
+  text-decoration: underline;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.links a:hover,
+.links a:focus-visible {
   text-decoration: none;
 }
-a:hover {
-  color: #ff00ff;
-  text-decoration: underline;
+
+.main {
+  width: 100%;
+  max-width: 960px;
 }
-ul {
-  list-style: none;
-  padding: 0;
+
+.grass-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: min(60vh, 520px);
 }
-footer {
-  margin-top: 2em;
-  color: #ff0000;
-  font-size: 0.8em;
+
+#grass-field {
+  position: relative;
+}
+
+.grass-tile {
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 1.75rem 1rem 2.5rem;
+    gap: 2.5rem;
+  }
+
+  .grass-tile {
+    width: 192px;
+    height: 192px;
+  }
 }
