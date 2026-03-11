@@ -3,11 +3,16 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!field) return;
 
   const GRID_SIZE = 30;
-  const DISPLAY_SIZE_DESKTOP = 240; // CSS pixels, matches .grass-tile
+  const DISPLAY_SIZE_DESKTOP = 120; // CSS pixels, matches .grass-tile
 
-  const BASE_GROW_INTERVAL_MS = 5_000;
+  const BASE_GROW_INTERVAL_MS = 3_000;
   const BASE_LIFETIME_MS = 60_000;
   const TIMING_NOISE_FACTOR = 0.1; // 10% timing noise, tweakable
+
+  const MAX_COLS = 9;
+  const MAX_ROWS = 9;
+  const START_COL = Math.floor(MAX_COLS / 2);
+  const START_ROW = Math.floor(MAX_ROWS / 2);
 
   const tiles = [];
   let growTimerId = null;
@@ -28,6 +33,30 @@ document.addEventListener("DOMContentLoaded", () => {
     return DISPLAY_SIZE_DESKTOP;
   }
 
+  function sizeField() {
+    const displaySize = currentDisplaySize();
+    field.style.width = `${MAX_COLS * displaySize}px`;
+    field.style.height = `${MAX_ROWS * displaySize}px`;
+
+    const fieldCenterX = (MAX_COLS * displaySize) / 2;
+    const fieldCenterY = (MAX_ROWS * displaySize) / 2;
+    const tileCenterX = (START_COL + 0.5) * displaySize;
+    const tileCenterY = (START_ROW + 0.5) * displaySize;
+    const offsetX = fieldCenterX - tileCenterX;
+    const offsetY = fieldCenterY - tileCenterY;
+    field.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+  }
+
+  function layoutTilesForCurrentSize() {
+    const displaySize = currentDisplaySize();
+    for (const t of tiles) {
+      const left = t.x * displaySize;
+      const top = t.y * displaySize;
+      t.el.style.left = `${left}px`;
+      t.el.style.top = `${top}px`;
+    }
+  }
+
   function randomGrassBase() {
     const baseHue = (120 + hueOffset) % 360;
     const hue = baseHue + (Math.random() - 0.5) * 40;
@@ -45,15 +74,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const h = canvas.height;
 
     ctx.clearRect(0, 0, w, h);
+    // Simple dark ground at the bottom
+    ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${Math.max(10, lightnessBase - 10)}%)`;
+    const groundHeight = 2;
+    ctx.fillRect(0, h - groundHeight, w, groundHeight);
 
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const verticalFactor = y / h;
-        const noise = (Math.random() - 0.5) * 10;
-        let lightness = lightnessBase + verticalFactor * 22 + noise;
-        lightness = Math.max(12, Math.min(70, lightness));
-        ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-        ctx.fillRect(x, y, 1, 1);
+    // Side-view blades of grass
+    for (let x = 0; x < w; x++) {
+      if (Math.random() < 0.3) continue; // sparse blades
+      const bladeHeight = Math.floor(h * (0.4 + Math.random() * 0.5));
+      let currentX = x;
+      for (let step = 0; step < bladeHeight; step++) {
+        const y = h - groundHeight - step;
+        if (y < 0) break;
+
+        const heightFactor = step / bladeHeight;
+        const light = lightnessBase + heightFactor * 20 + (Math.random() - 0.5) * 5;
+        const clampedLight = Math.max(18, Math.min(80, light));
+        ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${clampedLight}%)`;
+        ctx.fillRect(currentX, y, 1, 1);
+
+        // Slight random lean for the blade
+        if (Math.random() < 0.35) {
+          currentX += Math.random() < 0.5 ? -1 : 1;
+          if (currentX < 0) currentX = 0;
+          if (currentX >= w) currentX = w - 1;
+        }
       }
     }
   }
@@ -78,30 +124,14 @@ document.addEventListener("DOMContentLoaded", () => {
     field.appendChild(canvas);
 
     const lifetime = withTimingNoise(BASE_LIFETIME_MS);
-    setTimeout(() => {
-      const idx = tiles.indexOf(tile);
-      if (idx !== -1) {
-        tiles.splice(idx, 1);
-      }
-      if (canvas.parentElement === field) {
-        field.removeChild(canvas);
-      }
-    }, lifetime);
+    setTimeout(() => removeTile(tile), lifetime);
 
-    canvas.addEventListener("click", () => {
-      const idx = tiles.indexOf(tile);
-      if (idx !== -1) {
-        tiles.splice(idx, 1);
-      }
-      if (canvas.parentElement === field) {
-        field.removeChild(canvas);
-      }
-    });
+    canvas.addEventListener("click", () => removeTile(tile));
   }
 
   function spawnAdjacentGrass() {
     if (!tiles.length) {
-      createGrassTile(0, 0);
+      createGrassTile(START_COL, START_ROW);
       return true;
     }
 
@@ -119,6 +149,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const dir = directions[Math.floor(Math.random() * directions.length)];
       const nx = base.x + dir.x;
       const ny = base.y + dir.y;
+      if (nx < 0 || nx >= MAX_COLS || ny < 0 || ny >= MAX_ROWS) {
+        continue;
+      }
       const key = `${nx},${ny}`;
 
       if (!occupied.has(key)) {
@@ -129,6 +162,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     return false;
+  }
+
+  function removeTile(tile) {
+    const idx = tiles.indexOf(tile);
+    if (idx !== -1) tiles.splice(idx, 1);
+    if (tile.el.parentElement === field) field.removeChild(tile.el);
+    if (growTimerId === null) scheduleNextGrowth();
   }
 
   function scheduleNextGrowth() {
@@ -144,8 +184,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Start with a single piece of grass.
-  createGrassTile(0, 0);
+  sizeField();
+  createGrassTile(START_COL, START_ROW);
 
   // Grow new pieces roughly every 5 seconds until the field is full.
   scheduleNextGrowth();
+
+  window.addEventListener("resize", () => {
+    sizeField();
+    layoutTilesForCurrentSize();
+  });
 });
