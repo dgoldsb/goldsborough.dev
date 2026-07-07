@@ -3,26 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Dylan Goldsborough — GitHub, LinkedIn, CV">
+  <meta name="theme-color" content="#000000">
   <title>Dylan Goldsborough</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='3' y='3' width='4' height='4' fill='%2300ff00'/%3E%3Crect x='9' y='9' width='4' height='4' fill='%23ff00ff'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
 </head>
 <body>
-  <div class="page">
-    <header class="hero">
-      <h1 class="name">Dylan Goldsborough</h1>
-      <nav class="links">
-        <a href="https://github.com/dgoldsb" target="_blank" rel="noopener noreferrer">GitHub</a>
-        <a href="https://www.linkedin.com/in/dylan-goldsborough-152992aa/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-        <a href="assets/cv.pdf" target="_blank" rel="noopener noreferrer">CV</a>
-      </nav>
-    </header>
+  <canvas id="sonar" aria-hidden="true"></canvas>
 
-    <main class="main">
-      <div class="grass-wrapper">
-        <div id="grass-field" aria-label="Growing pixel grass"></div>
-      </div>
-    </main>
-  </div>
+  <!-- Real links for screen readers, keyboard users, and crawlers.
+       Focusing one pings its location on the canvas. -->
+  <header class="sr-only">
+    <h1>Dylan Goldsborough</h1>
+    <nav>
+      <a id="link-github" href="https://github.com/dgoldsb" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a id="link-linkedin" href="https://www.linkedin.com/in/dylan-goldsborough-152992aa/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a id="link-cv" href="assets/cv.pdf" target="_blank" rel="noopener noreferrer">CV</a>
+    </nav>
+  </header>
+
+  <noscript>
+    <div class="noscript">
+      <h1>Dylan Goldsborough</h1>
+      <p>
+        <a href="https://github.com/dgoldsb">GitHub</a> ·
+        <a href="https://www.linkedin.com/in/dylan-goldsborough-152992aa/">LinkedIn</a> ·
+        <a href="assets/cv.pdf">CV</a>
+      </p>
+    </div>
+  </noscript>
 </body>
 </html>
