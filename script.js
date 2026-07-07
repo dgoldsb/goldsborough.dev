@@ -172,24 +172,23 @@ document.addEventListener("DOMContentLoaded", () => {
       seen.sort((a, b) => a - b);
       const p99 = seen.length ? seen[Math.floor(seen.length * 0.99)] : 1;
       const scale = p99 > 0 ? IMAGE_MAX_LEVEL / p99 : 0;
-      // Feather via coverage, not brightness: over the outer ~12% a cell's
-      // odds of acting as photo (vs ordinary green void) taper to zero, so
-      // the edge dissolves while still riding the waves normally.
-      const feather = Math.max(3, Math.round(Math.min(imgRect.w, imgRect.h) * 0.12));
+      // GitHub-style circular avatar: cells outside the circle stay ordinary
+      // void, a slim ring at the rim forms the border.
+      const circleX = imgRect.x + imgRect.w / 2;
+      const circleY = imgRect.y + imgRect.h / 2;
+      const radius = Math.min(imgRect.w, imgRect.h) / 2;
+      const borderW = 1.5;
       for (let i = 0; i < n; i++) {
         if (lum[i] > 0 && cover[i] === 0) {
-          const px = i % gridW;
-          const py = (i / gridW) | 0;
-          const edge = Math.min(
-            px - imgRect.x,
-            imgRect.x + imgRect.w - 1 - px,
-            py - imgRect.y,
-            imgRect.y + imgRect.h - 1 - py
-          );
-          let fade = Math.min(1, Math.max(0, edge / feather));
-          fade *= fade * (3 - 2 * fade);
-          cover[i] = fade;
-          mask[i] = Math.min(IMAGE_MAX_LEVEL, lum[i] * scale);
+          const px = (i % gridW) + 0.5;
+          const py = ((i / gridW) | 0) + 0.5;
+          const dist = Math.hypot(px - circleX, py - circleY);
+          if (dist > radius) continue;
+          cover[i] = 1;
+          mask[i] =
+            dist > radius - borderW
+              ? IMAGE_MAX_LEVEL * 0.7
+              : Math.min(IMAGE_MAX_LEVEL, lum[i] * scale);
         }
       }
     }
